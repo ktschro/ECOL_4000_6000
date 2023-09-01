@@ -1,0 +1,36 @@
+column,description
+taxa,taxa name
+bay,bay number
+month,month of collection
+day,day of collection
+year,year of collection
+abund,"abundance of the taxon in the sample, count"
+male,number of males collected
+female,number of females collected (calanoids only)
+repro,number of egg bearing (copepods) or parthenogenetic individuals (cladocerans)
+eph,number of ephippial females (cladocerans only)
+density,ind/L
+volume,volume of tube sample (mL)
+mean_temp_C,mean temperature - averaged across all sampling events
+temp_var,temperature variance across all sampling events
+conductivity,conductivity across all sampling events
+pH,average pH across sampling events
+hydro_days,number of days water was present in the wetlands per year
+soil,soil type
+canopy,canopy type
+area_ha,area of wetland depression
+sample_date,date of sampling
+species,taxonomy - species
+genus,taxonomy - genus
+family,taxonomy - family
+order,taxonomy - order
+class,taxonomy - class
+phylum,taxonomy - phylum
+ID_specificity,specificity of the ID - what level of classification it goes to
+broad_group,"general group for each taxa (e.g. cladoceran, copepod, beetle)"
+general_diet,description of the diet of the taxon
+functional_feeding_group,"functional feeding group (i.e. scraper, filter feeder, collector, scavenger)"
+diet_specifics,"more detail on the diet, examples of specific things eaten"
+diet_internet_source,where the diet data were found
+size_mm,estimate of the size of an adult of the taxon
+size_source,source of the size data

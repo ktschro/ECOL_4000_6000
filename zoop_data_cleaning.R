@@ -244,13 +244,55 @@ zoop_summed_long <- zoop %>% group_by(sample_date_long,bay,taxa) %>%
 bay_info <- read.csv("SRS_bay_summary_table.csv")
 bay_info %<>% rename(bay=Bay)
 
-zoop_bay <- merge(zoop,bay_info,by="bay")
-zoop_bay$Hydro_days <- zoop_bay$Hydro_days/2
+
+bay_info$Hydro_days <- bay_info$Hydro_days/2
 
 #change soil to full term
-zoop_bay$Soil <- gsub('up','upland',zoop_bay$Soil)
-zoop_bay$Soil <- gsub('sh','sand',zoop_bay$Soil)
-zoop_bay$Soil <- gsub('ter','terrace',zoop_bay$Soil)
+bay_info$Soil <- gsub('up','upland',bay_info$Soil)
+bay_info$Soil <- gsub('sh','sand',bay_info$Soil)
+bay_info$Soil <- gsub('ter','terrace',bay_info$Soil)
 
-zoop_bay$Canopy <- gsub('o','open',zoop_bay$Canopy)
-zoop_bay$Canopy <- gsub('f','forrested',zoop_bay$Canopy)
+bay_info$Canopy <- gsub('o','open',bay_info$Canopy)
+bay_info$Canopy <- gsub('f','forrested',bay_info$Canopy)
+
+## merge everything together:
+zoop_combo<-merge(zoop_summed_long,bay_info,by="bay")
+
+str(zoop_combo)
+zoop_combo %<>% rename(mean_temp_C=MeanTempC,
+                       temp_var=TempVariance,
+                       conductivity=Cond,
+                       hydro_days=Hydro_days,
+                       soil=Soil,
+                       canopy=Canopy,
+                       area_ha=AreaHa)
+zoop_combo %<>% separate_wider_delim(cols=sample_date_long,delim="_",names=c("month","day","year"))
+
+zoop_combo$date<-as.Date(with(zoop_combo,paste(year,month,day,sep="-")), "%Y-%m-%d")
+
+## add taxanomic info - need to clean up names
+#remove cf.
+zoop_combo %<>% mutate(taxa = gsub('cf. ','',taxa))
+zoop_combo %<>% filter(taxa != "") 
+zoop_combo %<>% mutate(taxa = case_when(
+  str_detect(taxa,"Amphibia") ~ gsub('Amphibia: ','',taxa),
+  str_detect(taxa,"Arachnida") ~ gsub('Arachnida: ','',taxa),
+  str_detect(taxa,"Crayfish") ~ gsub('Crayfish','Decapoda',taxa),
+  str_detect(taxa,"Dytiscidae: larvae") ~ gsub('Coleoptera: Dytiscidae: larvae', 'Dytiscidae larva',taxa),
+  str_detect(taxa,"Coleoptera: larva") ~ gsub('Coleoptera: larva','Coleoptera larva',taxa),
+  str_detect(taxa,"Coleoptera: ") ~ gsub('Coleoptera: ','',taxa),
+  str_detect(taxa,"Diptera: larva") ~ gsub('Diptera: larva','Diptera larva',taxa),
+  str_detect(taxa,"Diptera: ") ~ gsub('Diptera: ','',taxa),
+  str_detect(taxa,"Hemiptera: larvae") ~ gsub('Hemiptera: larvae','Hemiptera larva',taxa),
+  str_detect(taxa,"Hemiptera: ") ~ gsub('Hemiptera: ','',taxa),
+  str_detect(taxa,"Neuroptera") ~ gsub('Neuroptera: ','',taxa),
+  str_detect(taxa,"Odonata") ~ gsub('Odonata: ','',taxa),
+  TRUE ~ taxa))
+
+#time for the big merge
+taxonomy <- read.csv("~/Documents/GitHub/ECOL_4000_6000/ids_taxanomic_info.csv")
+
+big_zoop<-merge(zoop_combo,taxonomy,by="taxa")
+observations<-as.data.frame(table(big_zoop$taxa))
+
+write.csv(big_zoop,"cleaned_SRS_zoop_data.csv")
