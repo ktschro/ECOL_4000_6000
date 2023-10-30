@@ -1,0 +1,147 @@
+---
+title: "A cheat sheet to 'tidy' data processing"
+author: "Katie Schroeder"
+date: "2023-10-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+```{r,eval=FALSE,echo=FALSE}
+setwd("~/GitHub/ECOL_4000_6000")
+location <- read.csv("location.csv")
+```
+
+### To begin, reminders from problem sets (and alternative options):  
+#### Topic 1: Basics - setting your working directory, install and calling packages  
+
+**Setting your working directory:**  
+This step is really important and tells R where you're grabbing files from on your computer. There are a couple options for setting your working directory:  
+
+* set it manually using the `setwd()` command
+    + Ex: setwd("~/User/Dawg1/Documents")  
+* set it to the source file location  
+    + If your script is saved in the same location as the files you will be loading, you can go to the session menu, select "Set working directory" and then select "To source file location"
+* set it to a folder you browse for  
+    + You can select your working directory location by going to the session menu, selecting "Set working directory" and then selecting "Choose directory"  
+
+**Installing a package:**   
+We've used a few packages in this class so far (one example is tidyverse). As you work more with R, you may find more and more useful packages. If you don't have a package on your computer, you'll have to install it using `install.packages()`. Make sure you put the name of the package in quotes when you're using `install.packages()`  
+
+**Calling a package from your library:**    
+If you have a package installed, it's in your library, but will not be automatically loaded when you start a new R session. To use the functions in that package, you'll need to call it from your library.  
+For example, if we want to use `ggplot()`, we'll need to call tidyverse using the `library()` command.  
+Example: library(tidyverse)  
+
+Side note: You could also use library(ggplot2) if you were just using ggplot functions. tidyverse is a bit of a super package that contains a lot of other packages (including ggplot2).  
+
+#### Topic 2: Reading in data and viewing it  
+Often times we'll read things in as .csv files using `read.csv`  
+
+For the bears problem set, we used the following code:  
+```{r,echo=FALSE}
+bears<- read.csv("PS1_Data_Bears.csv")
+```
+
+**Viewing the data frame:**  
+
+To view the bears data frame, there are a couple options:   
+
+* You can type `View(bears)` into the console or into your script  
+* You can click on bears in the global environment  
+
+Some options for looking at your data:  
+* Overview of the entire data frame:
+    + `str()` gives an overview of the length, column names, and the type of data (number, character, integer, etc.) in each column  
+    + `head()` gives the first six rows of your data frame  
+    + `summary()` gives a summary of each column in your data frame (quantiles, minimums, maximums)  
+* For specific columns - remember to use the $ operator to specify the column!  
+    + `sum()` the total in a column  
+    + `min()` `mean()` `median()` and `max()` for those summary stats  
+
+**Subsetting the data frame:**  
+
+The brackets method from the bears problem set:  
+```{r,eval=FALSE}
+#getting a single column, females
+bears[,2] #second column
+bears$females #equivalent 
+
+#making two data frames for data before and after 1976
+bears1 <- bears[bears$year<1977,]
+bears2 <- bears[bears$year>1975,]
+```
+
+Tidyverse options:  
+```{r}
+#load tidyverse
+library(tidyverse)
+
+#getting a single column
+bears %>% select(females)
+
+#subsetting before and after 1976
+bears1 <- bears %>% filter(year<1977)
+bears2 <- bears %>% filter(year>1975)
+```
+
+#### Plotting:  
+Example from the bears problem set:  
+```{r}
+plot(bears$year,
+     bears$females,
+     xlab="Year",
+     ylab="Number of females", 
+     col="forestgreen", 
+     type="o", 
+     pch=20)
+
+# a tidyverse option: 
+ggplot(bears,aes(x=year,y=females)) +
+  geom_point() +
+  xlab("Year") +
+  ylab("Number of females") +
+  theme_classic()
+```
+
+**Commands for more advanced plotting in ggplot**  
+
+Command           |  What it does  
+------------------| --------------
+`geom_point()`    | adds points
+`geom_bar()`      | adds bar (bar plot)
+`geom_line()`     | adds lines (often used with `geom_point()`)
+
+
+#### Topic X: Finding the distance between points  
+There is a package you can use to find the distance between points using their latitude and longitude.   
+
+If you want to learn more about this package, you can follow [this link to the package documentation]{https://cran.r-project.org/web/packages/geosphere/index.html}.  
+
+The reference manual and a vignette are linked under documentation and are good references for using the package.  
+
+```{r}
+#call the package from your library
+library(geosphere)
+location <- read.csv("location.csv")
+
+#One method for determining the distance between two points is using the Haversine method. We'll use the distm function in the geosphere package and then specify the Haversine method
+
+#first we need to get a dataframe that is just the latitude and longitude of our 
+loc <- location[4:5]
+
+distances<-as.data.frame(distm(loc,fun=distHaversine))
+```
+
+The output of the `distm` function is a matrix of distances between our points. You'll have to reference the original list to identify which bays each distance refers to.  
+
+In the `distm` command, we specified fun = distHaversine. There are other options - distGeo or distCosine being two.  
+
+
+
+
+
+
