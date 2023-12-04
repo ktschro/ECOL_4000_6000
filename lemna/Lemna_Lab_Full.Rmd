@@ -1,0 +1,364 @@
+---
+title: "Lemna_Lab"
+author: "Katie Schroeder"
+date: "October 3, 2023"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, echo=FALSE}
+library(ggplot2)
+```
+Follow this guide to complete your lab write up. You can answer the questions, which will be bolded in this document, either as an R notebook file using this Markdown document as a template, or in a separate word or text document. Pay attention to places where you will need to change the code for your specific question. 
+
+##Questions and Hypotheses
+Before we jump into the data analysis, answer these questions about your experiment.
+
+**1. What was your question?**
+
+
+**2. What was your hypothesis?**
+
+
+**3. Describe your experimental design (including treatment groups and number of replicates).** 
+
+
+##Preliminaries
+First make sure your data is organized correctly for this analysis. If you used either the CSV template provided on the course website, your data should be close to this structure. If not, you might have to do some re-arranging in Google Sheets or Excel, then download as a CSV file.
+
+All of the code in this document is going to assume the following:
+
+1. Your working directory is already the folder where the lemna data file can be found. Use `getwd()` or `list.files()` to check or `setwd()` to change.
+2. Your data file is called "lemna.csv". If it's not, either change the code or the file-name.
+3. There are 4 key columns: 
+    1. `t` : The day the data point was collected, counting from 0. Values should be numbers.
+    2. `N` : The thalli count on that day. Values should be numbers.
+    3. `SampleID` : A sample or replicate ID (unique for each cup).
+    4. `Treatment` : A category or treatment value. 
+
+Work with your group members or talk to your TA if you aren't sure if your data is formatted correctly.
+
+Let's load in the data and take a look at it. Remember to use `setwd()` point R to the folder where you have your data set!
+
+```{r}
+lemna <- read.csv("lemna.csv")
+str(lemna)
+```
+
+This tells us how many observations of how many variables we have. Two of them are integers - t and N, and two of them are factors - SampleID and Treatment. If that's not true in your data, you can use the functions `as.numeric()` or `as.factor()` to change the data type: 
+
+
+##Plotting the Data
+
+**4. Include a plot of lemna growth versus time that shows the difference between your treatments. (This can be by using different point shapes, different colors, or separate panels for each treatment.) Include an appropriate title, axis labels, and a legend or key (if needed).**
+
+**5. From these plots, does it look like your lemna are growing exponentially, logistically, or orthologistically? Do different treatments have the same or different growth patterns?**
+
+In the next couple of sections, I'm going to show you two approaches to plotting in R. You can pick your favorite, and only need to use one in your final write-up. Where appropriate, you should use more descriptive titles and labels than the default ones given.
+
+###Option A: Using R's basic plot functions
+Using the most basic `plot()` function, we don't have to install any special packages. All we really need is a data set with an "x" variable and a "y" variable, but we can add more details that give our plot more information. 
+
+Compare: 
+
+```{r}
+plot(N ~ t, data = lemna)
+```
+
+and:
+
+```{r}
+plot(N ~ t, data = lemna, 
+     pch = 16, #gives us solid circles
+     col = as.factor(Treatment), #Colors them by treatment
+     xlab = "t (days)",
+     ylab = "N (thalli count)"
+     )
+
+#The following command creates the legend for the plot we made
+legend("topleft", legend = levels(as.factor(lemna$Treatment)), col = c(1:4), pch=16)
+```
+
+###Option B: Plotting with `ggplot2`
+
+This is my favorite approach to plotting in R, because I think it's the most flexible and I like its design philosophy. Most of our assignments in this class will use functions found in the package`ggplot2`. 
+
+Once again, if you don't have it already, we need to install and load the library: 
+
+```{r, eval = FALSE}
+install.packages("ggplot2")
+library(ggplot2)
+```
+
+One thing about `ggplot` is that there are two ways to give commands that result in the same plots. I'll show both, but whether you run the first or the second, you'll get the same plot. 
+
+```{r, eval = FALSE}
+ggplot(lemna, aes(x = t, y = N, color = Treatment)) +
+  geom_point() + 
+  labs(x = "Time (day)", y = "N (thalli count)") +
+  theme_classic()
+```
+
+is equivalent to: 
+
+```{r}
+qplot(t, N, data = lemna, 
+      color = Treatment, 
+      xlab = "Time (day)",
+      ylab = "N (thalli count)"
+      ) + theme_classic()
+```
+
+If you want to more closely compare the individuals within each treatment, we can make four little plots  instead of one with each category: 
+
+```{r}
+ggplot(lemna, aes(x = t, y = N, color = as.factor(Sample.ID))) +
+  geom_point() + 
+  facet_wrap( ~ Treatment, nrow = 2) +
+  theme_classic()
+```
+
+##Data Analysis: Calcuating growth rates.
+As we've seen in class, we can learn more about the parameters that govern the growth of our populations by looking at the relationship between the per capita growth rate and the population size. This relationship is given by the equation
+
+$$ 
+\frac{1}{N}\frac{dN}{dt} = r (1-\frac{N}{K})
+$$
+
+In the following blocks of code, we'll calculate the per capita growth rate and use liner regression to calculate r and K. The per capita growth rate is:
+$$
+\frac{1}{N}\frac{dN}{dt}
+$$
+To make this look more like the equation for a line (y=mx+b), we'll distribute r and organize our equation a little differently:
+$$
+\frac{1}{N}\frac{dN}{dt} = (-\frac{r}{K})N + r
+$$
+In this case our y is the per capita growth rate and N is our x
+
+**6. What do `r` and `K` represent, both biologically and in the context of a linear model (ie, are they a slope, an x-intercept, a y-intercept, etc)?**
+
+**7. How do you calculate K, the carrying capacity based on the slope and intercept of a linear regression?**
+
+If you're running into trouble with the following code, make sure your column labels match the labels used!
+
+```{r}
+#We can start making empty vectors we can add to. 
+dN = numeric()
+dt = numeric()
+
+#Make sure our data is consistently sorted: 
+lemna = lemna[order(lemna$Sample.ID,lemna$t),]
+
+#Now let's pull out our sample ID names. 
+samples = unique(as.character(lemna$Sample.ID))
+
+#Now we run through each sample, calculating the values we need
+for (i in 1:length(samples)) {
+  sub_data = subset(lemna, as.character(lemna$Sample.ID) == samples[i])
+  dN = c(dN, sub_data$N[2:nrow(sub_data)] - sub_data$N[1:(nrow(sub_data)-1)], NA)
+  dt = c(dt, sub_data$t[2:nrow(sub_data)] - sub_data$t[1:(nrow(sub_data)-1)], NA)
+}
+
+#We can then add those back into our dataframe: 
+lemna$dN = dN
+lemna$dt = dt
+
+#And calculate our last column: 
+lemna$perCapita = (1/lemna$N) * (lemna$dN/lemna$dt)
+```
+
+Double check the first couple of rows of your data to make sure the values look reasonable: 
+
+```{r}
+head(lemna)
+```
+
+You could also run `View(lemna)` to see the whole data set in another tab.
+
+Now we can plot the per capita growth rate vs N to see what kind of growth seems most appropriate.
+
+**8. Make a graph plotting per capita growth rate versus population size for your samples. You should be able to use the same code you used to plot population versus time, changing the variables and labels for the axes, as well as the title.**
+
+```{r}
+ggplot(lemna, aes(x = N, y = perCapita, color = Sample.ID)) +
+  ylab("Per Capita Growth Rate") +
+  xlab("N (Thalli Count)") +
+  geom_point() + 
+  facet_wrap( ~ Treatment, nrow = 2) +
+  theme_classic()
+```
+
+Here is a summary of the model output for your first population:
+
+```{r}
+sample1 <- subset(lemna, lemna$Sample.ID == unique(lemna$Sample.ID)[1])
+fit <- lm(perCapita ~ N, data = sample1)
+summary(fit)
+```
+
+There's a lot going in in this output. Everything you care about begins at the table labeled "Coefficients": here's what you need to know: 
+
+- The first row, labeled (Intercept), is the y-intercept for the line. 
+- The second row, labeled N, is the slope of the line.
+- The first column of numbers, labeled Estimate, are the values for that estimate.
+- The last column, labeled Pr(>|t|), are the p-values for the question "Is the estimate significantly different from 0?"
+- The second line from the bottom of the summary gives two options for the R-squared value for this fit (either is OK to discuss).
+- The last line of the summary gives a statistical test for the fit of the model, including a p-value. 
+
+The following code gives you a table summarizing the output of the linear regression for each sample. Note that if the slope is close to 0 and the p-value is very high, it's unlikely the true slope is a number other than 0.
+
+**9. Use this data, create a neatly formatted table to display the relevant data. For each population, you should include the sample ID, the treatment, r, the slope, K (if applicable), the growth type (exponential, orthologistic or logistic), and any notes about your confidence in the estimates of these parameters.**
+
+```{r, eval=FALSE}
+#Set up some columns
+Sample.ID = character(0)
+Treatment = character(0)
+Intercept = numeric(0)
+Intercept.pValue = numeric(0)
+Slope = numeric(0)
+Slope.pValue = numeric(0)
+Rsquared = numeric(0)
+model.pValue = numeric(0)
+
+for (i in 1:length(samples)) {
+  sub_set = subset(lemna, lemna$Sample.ID == samples[i])
+  model_sum = summary(lm(perCapita ~ N, data = sub_set))
+  Sample.ID = c(Sample.ID, as.character(sub_set$Sample.ID[1]))
+  Treatment = c(Treatment, as.character(sub_set$Treatment[1]))
+  Intercept = c(Intercept, model_sum$coefficients[1,1])
+  Intercept.pValue = c(Intercept.pValue, model_sum$coefficients[1,4])
+  Slope = c(Slope, model_sum$coefficients[2,1])
+  Slope.pValue = c(Slope.pValue, model_sum$coefficients[2,4])
+  Rsquared = c(Rsquared, model_sum$r.squared)
+  model.pValue = c(model.pValue, unname(pf(model_sum$fstatistic[1L],model_sum$fstatistic[2L],model_sum$fstatistic[3L],lower.tail=FALSE)))
+}
+
+results <- data.frame(Sample.ID=Sample.ID, treatment=Treatment,Intercept =Intercept, Intercept.pValue=Intercept.pValue, Slope=Slope, Slope.pValue=Slope.pValue, Rsquared=Rsquared, model.pValue=model.pValue)
+
+
+print(results, digits = 5)
+```
+
+##Statistical Analysis
+
+**10. Look back at your research question and hypothesis. In the table you made in question 8, which column is your independant variable? Your dependant variable? What is the appropriate statistical test to use to answer your research question?**
+
+
+Here are some example pieces of code for a couple of common statistical tests. They may or may not be relevant to your analysis (they definitely won't all be relevant). You'll need to replace the variable names, written in ALL CAPS, with your own variables. 
+
+#####Correlation
+
+`cor(VARIABLE1, VARIABLE2)`
+
+or
+
+`cor(DATAFRAME)`
+
+where all of the columns are numbers.
+
+#####Linear Regression
+
+`fit <- lm(OUTPUT ~ INPUT, data = DATA)` when you have one independent variable 
+or
+
+`fit <- lm(OUTPUT ~ INPUT1\*INPUT2\*INPUT3, data=DATA)` when you have multiple independent variables and care about the interaction. 
+
+`summary(fit)` to see more descriptive statistics of the results.
+
+#####t-test
+
+`t.test(VAR1, VAR2)` for a two-sided t-test (null is that means are equal)
+
+`t.test(VAR1, VAR2, paired = TRUE)` for a paired t-test
+
+`t.test(VAR1, VAR2, alternative = "less")` to test if mean(VAR1) < mean(VAR2)
+
+`t.test(VAR1, VAR2, alternative = "greater")` to test if mean(VAR1) > mean(VAR2)
+
+#####ANOVA
+
+The formatting for a basic ANOVA test is identical to that of linear regression, except for the function used: 
+
+`anova <- aov(OUTPT ~ INPUT, data = DATA)` to calculate values and 
+
+`summary(anova)` to display the results in table
+
+
+
+#####Chi-squared
+
+`chisq.test(GROUPA, GROUPB)` where each of the variables is a list of counts in at least 2 categories
+
+or 
+
+`chisq.test(MATRIX)` where the data is a matrix that has at least two columns (groups) and rows (categories)
+
+**11. Did your results support your hypothesis? Why or why not?**
+
+Compare: 
+> library(agricolae)
+> HSD.test(ajuste,'lemna2$Treatment')
+Error in "aov" %in% class(y) : object 'ajuste' not found
+> lemna.lm<-lm(K~Treatment,data=lemna2)
+> lemna.av<-aov(lemna.lm)
+> summary(lemna.av)
+            Df Sum Sq Mean Sq F value  Pr(>F)   
+Treatment    3   3992  1330.6   22.58 0.00572 **
+Residuals    4    236    58.9                   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+> TukeyHSD(lemna.av)
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = lemna.lm)
+
+$`Treatment`
+                                    diff        lwr        upr     p adj
+High Nutrient-Control          33.745245   2.494135  64.996355 0.0389347
+Low Nutrient-Control          -29.123335 -60.374445   2.127775 0.0624925
+Medium Nutrient-Control         6.174325 -25.076785  37.425435 0.8499512
+Low Nutrient-High Nutrient    -62.868580 -94.119690 -31.617470 0.0042041
+Medium Nutrient-High Nutrient -27.570920 -58.822030   3.680190 0.0739581
+Medium Nutrient-Low Nutrient   35.297660   4.046550  66.548770 0.0335194
+
+> tukey.test<-TukeyHSD(lemna.av)
+> plot(tukey.test)
+> plot(tukey.test,las=1)
+> plot(tukey.test,las=1)
+> par(mar=c(5,7,4,1)+.1)
+> par(mar=c(5,10,4,1)+.1)
+> plot(tukey.test,las=1)
+> par(mar=c(5,15,4,1)+.1)
+> plot(tukey.test,las=1)
+> par(mar=c(5,13,4,1)+.1)
+> plot(tukey.test,las=1)
+> par(mar=c(5,13,4,7)+.1)
+> plot(tukey.test,las=1)
+Error in plot.new() : figure margins too large
+> par(mar=c(5,13,4,4)+.1)
+> plot(tukey.test,las=1)
+> boxplot(lemna$K~lemna$Treatment)
+Error in model.frame.default(formula = lemna$K ~ lemna$Treatment) : 
+  invalid type (NULL) for variable 'lemna$K'
+> boxplot(lemna2$K~lemna2$Treatment)
+> par(mar=c(5,6,4,1)+.1)
+> boxplot(lemna2$K~lemna2$Treatment)
+> boxplot(lemna2$K~lemna2$Treatment,xlab="Treatment",ylab="Average Carrying Capacity, K")
+> bpm<-with(lemna2,reorder(Treatment,K,FUN=median))
+> boxplot(K~bpm,data=lemna2)
+> boxplot(K~bpm,data=lemna2,xlab="Treatment",ylab="Average Carrying Capacity, K")
+
+```{r}
+setwd("C:/Users/kschr/downloads")
+lemna2<-read.csv("lemna2.csv")
+anova<-aov(lemna2$K~lemna2$Treatment)
+summary(anova)
+posthoc<-TukeyHSD(x=anova,'lemna2$Treatment',conf.level = 0.95)
+posthoc
+
+```

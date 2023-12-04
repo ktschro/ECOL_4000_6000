@@ -5,6 +5,7 @@ date: "2023-10-13"
 output:
   html_document: default
   pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -108,9 +109,11 @@ ggplot(bears,aes(x=year,y=females)) +
 
 **Commands for more advanced plotting in ggplot**  
 
-ggplot cheat sheet page 1: ![](page1.jpg)   
+ggplot cheat sheet page 1:  
+![](page1.jpg)   
 
-ggplot cheat sheet page 2: ![](page2.jpg)  
+ggplot cheat sheet page 2:  
+![](page2.jpg)  
 
 
 #### Topic 4: Calculating different response variables  
@@ -446,4 +449,4 @@ ggplot(weather_summary2,aes(x=month_year,y=mean_maxT)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
-**And that's the end of the cheat sheet!** This cheat sheet is the product of years of practice with R and isn't something that you should expect to pick up immediately, but hopefully it's helpful as a reference. Good luck with your group projects! 
+**And that's the end of the cheat sheet!** 

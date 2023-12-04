@@ -1,0 +1,121 @@
+Sample ID,Treatment,t,N
+CTRL1,Control,0,4
+CTRL2,Control,0,4
+HN1,High nutrient,0,4
+HN2,High nutrient,0,4
+MN1,Medium nutrient,0,4
+MN2,Medium nutrient,0,4
+LN1,Low nutrient,0,4
+LN2,Low nutrient,0,4
+CTRL1,Control,1,5
+CTRL2,Control,1,5
+HN1,High nutrient,1,6
+HN2,High nutrient,1,4
+MN1,Medium nutrient,1,4
+MN2,Medium nutrient,1,4
+LN1,Low nutrient,1,5
+LN2,Low nutrient,1,4
+CTRL1,Control,2,5
+CTRL2,Control,2,7
+HN1,High nutrient,2,8
+HN2,High nutrient,2,4
+MN1,Medium nutrient,2,5
+MN2,Medium nutrient,2,6
+LN1,Low nutrient,2,7
+LN2,Low nutrient,2,5
+CTRL1,Control,5,10
+CTRL2,Control,5,11
+HN1,High nutrient,5,14
+HN2,High nutrient,5,12
+MN1,Medium nutrient,5,12
+MN2,Medium nutrient,5,13
+LN1,Low nutrient,5,13
+LN2,Low nutrient,5,12
+CTRL1,Control,6,12
+CTRL2,Control,6,13
+HN1,High nutrient,6,17
+HN2,High nutrient,6,15
+MN1,Medium nutrient,6,13
+MN2,Medium nutrient,6,14
+LN1,Low nutrient,6,13
+LN2,Low nutrient,6,13
+CTRL1,Control,7,18
+CTRL2,Control,7,17
+HN1,High nutrient,7,27
+HN2,High nutrient,7,18
+MN1,Medium nutrient,7,19
+MN2,Medium nutrient,7,22
+LN1,Low nutrient,7,18
+LN2,Low nutrient,7,13
+CTRL1,Control,8,24
+CTRL2,Control,8,21
+HN1,High nutrient,8,28
+HN2,High nutrient,8,24
+MN1,Medium nutrient,8,23
+MN2,Medium nutrient,8,24
+LN1,Low nutrient,8,20
+LN2,Low nutrient,8,14
+CTRL1,Control,9,27
+CTRL2,Control,9,24
+HN1,High nutrient,9,30
+HN2,High nutrient,9,27
+MN1,Medium nutrient,9,25
+MN2,Medium nutrient,9,29
+LN1,Low nutrient,9,21
+LN2,Low nutrient,9,16
+CTRL1,Control,12,34
+CTRL2,Control,12,36
+HN1,High nutrient,12,58
+HN2,High nutrient,12,54
+MN1,Medium nutrient,12,42
+MN2,Medium nutrient,12,40
+LN1,Low nutrient,12,26
+LN2,Low nutrient,12,23
+CTRL1,Control,13,43
+CTRL2,Control,13,42
+HN1,High nutrient,13,62
+HN2,High nutrient,13,60
+MN1,Medium nutrient,13,48
+MN2,Medium nutrient,13,46
+LN1,Low nutrient,13,28
+LN2,Low nutrient,13,24
+CTRL1,Control,14,47
+CTRL2,Control,14,44
+HN1,High nutrient,14,66
+HN2,High nutrient,14,67
+MN1,Medium nutrient,14,50
+MN2,Medium nutrient,14,48
+LN1,Low nutrient,14,30
+LN2,Low nutrient,14,25
+CTRL1,Control,15,51
+CTRL2,Control,15,48
+HN1,High nutrient,15,78
+HN2,High nutrient,15,75
+MN1,Medium nutrient,15,50
+MN2,Medium nutrient,15,51
+LN1,Low nutrient,15,33
+LN2,Low nutrient,15,26
+CTRL1,Control,16,53
+CTRL2,Control,16,49
+HN1,High nutrient,16,80
+HN2,High nutrient,16,77
+MN1,Medium nutrient,16,57
+MN2,Medium nutrient,16,58
+LN1,Low nutrient,16,34
+LN2,Low nutrient,16,26
+CTRL1,Control,19,56
+CTRL2,Control,19,53
+HN1,High nutrient,19,84
+HN2,High nutrient,19,86
+MN1,Medium nutrient,19,60
+MN2,Medium nutrient,19,64
+LN1,Low nutrient,19,34
+LN2,Low nutrient,19,26
+CTRL1,Control,21,60
+CTRL2,Control,21,56
+HN1,High nutrient,21,94
+HN2,High nutrient,21,98
+MN1,Medium nutrient,21,66
+MN2,Medium nutrient,21,69
+LN1,Low nutrient,21,37
+LN2,Low nutrient,21,32
